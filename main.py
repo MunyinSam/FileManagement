@@ -18,14 +18,21 @@ dest_dir_video = "C:/Users/Munyin/Downloads/Downloaded Video"
 dest_dir_image = "C:/Users/Munyin/Downloads/Downloaded Images"
 dest_dir_documents = "C:/Users/Munyin/Downloads/Documents"
 
-document_list = [".doc", ".docx", ".odt",
-                ".pdf", ".xls", ".xlsx", ".ppt", ".pptx"]
+image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+                    
+
+video_extensions = [".webm", ".mpg",".mp4",".avi"]
+
+
+audio_extensions = ["mp3", ".wav"]
+# ? supported Document types
+document_surnames = [".doc", ".docx", ".pdf",  ".ppt", ".pptx"]
+                       
 
 
 def make_unique(dest, name):
     filename, extension = splitext(name)
     counter = 1
-    # * IF FILE EXISTS, ADDS NUMBER TO THE END OF THE FILENAME
     while exists(f"{dest}/{name}"):
         name = f"{filename}({str(counter)}){extension}"
         counter += 1
@@ -41,26 +48,41 @@ def move_file(dest, entry, name):
     move(entry, dest)
 
 class MoverHandler(FileSystemEventHandler):
+     
     def on_modified(self, event):
-        with os.scandir(source_dir) as entries:
+        with scandir(source_dir) as entries:
             for entry in entries:
                 name = entry.name
-                dest = source_dir
-                if name.endswith('.mp3') or name.endswith('.wav'):
-                    dest = dest_dir_sfx
-                    move(dest, entry, name)
+                self.check_audio_files(entry, name)
+                self.check_video_files(entry, name)
+                self.check_image_files(entry, name)
+                self.check_document_files(entry, name)
 
-                elif name.endswith('.mp4') or name.endswith('.mov'):
-                    dest = dest_dir_video
-                    move(dest, entry, name)
+    def check_audio_files(self, entry, name): 
+        for audio_extension in audio_extensions:
+            if name.endswith(audio_extension) :
                 
-                elif name.endswith('.jpg') or name.endswith('.jpeg') or name.endswith('.png'):
-                    dest = dest_dir_image
-                    move(dest, entry, name)
+                dest = dest_dir_sfx
+                move_file(dest, entry, name)
+                logging.info(f"Moved audio file: {name}")
 
-                elif name.endswith in document_list:
-                    dest = dest_dir_documents
-                    move(dest, entry, name)
+    def check_video_files(self, entry, name): 
+        for video_extension in video_extensions:
+            if name.endswith(video_extension):
+                move_file(dest_dir_video, entry, name)
+                logging.info(f"Moved video file: {name}")
+
+    def check_image_files(self, entry, name):  
+        for image_extension in image_extensions:
+            if name.endswith(image_extension):
+                move_file(dest_dir_image, entry, name)
+                logging.info(f"Moved image file: {name}")
+
+    def check_document_files(self, entry, name): 
+        for documents_sur in document_surnames:
+            if name.endswith(documents_sur):
+                move_file(dest_dir_documents, entry, name)
+                logging.info(f"Moved document file: {name}")
 
                 
 
@@ -72,7 +94,7 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
     path = source_dir
-    event_handler = MoverHandler()
+    event_handler = MoverHandler() # calls the whole class
     observer = Observer()
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
