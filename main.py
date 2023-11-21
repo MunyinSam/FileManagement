@@ -58,6 +58,10 @@ class MoverHandler(FileSystemEventHandler):
                     dest = dest_dir_image
                     move(dest, entry, name)
 
+                elif name.endswith in document_list:
+                    dest = dest_dir_documents
+                    move(dest, entry, name)
+
                 
 
 
